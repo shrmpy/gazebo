@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: gzweb
+  labels:
+    app: gzweb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gzweb
+  template:
+    metadata:
+      labels:
+        app: gzweb
+    spec:
+      containers:
+        - image: osrf/gazebo:gzweb8
+          name: gzweb
+          env:
+          - name: GZWORLD
+            value: "worlds/twin_rotor_demo.world"
+          command: ["/bin/sh"]
+          args: ["-c","gzserver --verbose $(GZWORLD) & npm start"]
+          ports:
+            - containerPort: 8080
+              name: gzweb
+          volumeMounts:
+            - name: gzweb-persistent-storage
+              mountPath: /root/.gazebo
+      volumes:
+        - name: gzweb-persistent-storage
+          gcePersistentDisk:
+            pdName: gzweb-disk
+            fsType: ext4
